@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>steg.fun - Hide Secret Messages in Images | Steganography Tool</title>
+    <meta name="title" content="steg.fun - Hide Secret Messages in Images | Steganography Tool">
+    <meta name="description"
+        content="Free browser-based steganography tool to securely hide and reveal secret messages within images. No data transfer, completely private, and open source.">
+    <meta name="keywords"
+        content="steganography, image steganography, hidden messages, secret messages, privacy tool, encryption, image encryption">
+    <meta name="author" content="debug.dog">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://steg.fun/">
+    <meta property="og:title" content="steg.fun - Hide Secret Messages in Images">
+    <meta property="og:description"
+        content="Free browser-based steganography tool to securely hide and reveal secret messages within images. No data transfer, completely private, and open source.">
+    <meta property="og:image" content="https://steg.fun/og-image.png">
+    <meta property="og:site_name" content="steg.fun">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://steg.fun/">
+    <meta name="twitter:title" content="steg.fun - Hide Secret Messages in Images">
+    <meta name="twitter:description"
+        content="Free browser-based steganography tool to securely hide and reveal secret messages within images. No data transfer, completely private, and open source.">
+    <meta name="twitter:image" content="https://steg.fun/og-image.png">
+    <meta name="twitter:creator" content="@debugdoggo">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#0a0a0f">
+
+    <link rel="canonical" href="https://steg.fun/">
+    <meta name="application-name" content="steg.fun">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="steg.fun">
+
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' data: https:; connect-src 'self' https:;">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            DEFAULT: '#0a0a0f',
+                            secondary: '#141420'
+                        }
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        gradient: {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .gradient-border {
+            position: relative;
+            background: linear-gradient(to right, #0a0a0f, #141420);
+        }
+
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            right: -1px;
+            bottom: -1px;
+            left: -1px;
+            z-index: -1;
+            border-radius: 0.5rem;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899);
+            animation: gradient 8s linear infinite;
+        }
+
+        .animate-glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 5px #3b82f6, 0 0 10px #8b5cf6, 0 0 15px #ec4899;
+            }
+
+            to {
+                box-shadow: 0 0 10px #3b82f6, 0 0 20px #8b5cf6, 0 0 30px #ec4899;
+            }
+        }
+
+        @keyframes fadeInOut {
+
+            0%,
+            100% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .brand-glow {
+            filter: drop-shadow(0 0 2em rgba(59, 130, 246, 0.5));
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        .delay-1000 {
+            animation-delay: 1000ms;
+        }
+
+        .toast-enter {
+            transform: translateX(100%) translateY(100%);
+        }
+
+        .toast-enter-active {
+            transform: translateX(0) translateY(0);
+            transition: transform 0.3s ease-out;
+        }
+
+        .toast-exit {
+            transform: translateX(0) translateY(0);
+        }
+
+        .toast-exit-active {
+            transform: translateX(100%) translateY(100%);
+            transition: transform 0.3s ease-in;
+        }
+    </style>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('steganography', () => ({
+                message: '',
+                imagePreview: null,
+                encodedImage: null,
+                result: '',
+                dragover: false,
+
+                handleImageUpload(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.imagePreview = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+
+                handleDrop(event) {
+                    event.preventDefault();
+                    this.dragover = false;
+                    const file = event.dataTransfer?.files[0];
+                    if (file?.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.imagePreview = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+
+                encode() {
+                    if (!this.imagePreview) {
+                        this.result = 'Please upload an image first';
+                        return;
+                    }
+                    if (!this.message) {
+                        this.result = 'Please enter a message to hide';
+                        return;
+                    }
+
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const pixels = imageData.data;
+
+                        const binaryMessage = this.message.split('').map(char =>
+                            char.charCodeAt(0).toString(2).padStart(8, '0')
+                        ).join('') + '00000000'; // Add null terminator
+
+                        if (binaryMessage.length > pixels.length * 3) {
+                            this.result = 'Message too long for this image';
+                            return;
+                        }
+
+                        let binaryIndex = 0;
+                        for (let i = 0; i < pixels.length && binaryIndex < binaryMessage.length; i += 4) {
+                            for (let j = 0; j < 3 && binaryIndex < binaryMessage.length; j++) {
+                                pixels[i + j] = (pixels[i + j] & 254) | parseInt(binaryMessage[binaryIndex]);
+                                binaryIndex++;
+                            }
+                        }
+
+                        ctx.putImageData(imageData, 0, 0);
+                        this.encodedImage = canvas.toDataURL('image/png');
+                        this.result = 'success: Message encoded! 🎉';
+                    };
+                    img.src = this.imagePreview;
+                },
+
+                decode() {
+                    if (!this.imagePreview) {
+                        this.result = 'Please upload an image first';
+                        return;
+                    }
+
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const pixels = imageData.data;
+
+                        let binaryMessage = '';
+                        for (let i = 0; i < pixels.length; i += 4) {
+                            for (let j = 0; j < 3; j++) {
+                                binaryMessage += pixels[i + j] & 1;
+                            }
+                        }
+
+                        let message = '';
+                        for (let i = 0; i < binaryMessage.length; i += 8) {
+                            const byte = binaryMessage.substr(i, 8);
+                            if (byte === '00000000') break;
+                            message += String.fromCharCode(parseInt(byte, 2));
+                        }
+
+                        if (message) {
+                            this.result = `Decoded message: ${message}`;
+                        } else {
+                            this.result = 'No hidden message found in this image 🔍';
+                        }
+                    };
+                    img.src = this.imagePreview;
+                }
+            }));
+        });
+    </script>
+</head>
+
+<body
+    class="bg-dark text-gray-200 min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 via-dark to-black"
+    x-data="steganography()">
+    <div class="min-h-screen relative overflow-hidden flex items-center">
+        <div
+            class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 via-dark to-black">
+        </div>
+        <div
+            class="absolute inset-0 bg-[linear-gradient(to_right,#000000_1px,transparent_1px),linear-gradient(to_bottom,#000000_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_at_center,white,transparent_75%)] opacity-20">
+        </div>
+
+        <div
+            class="gradient-orb absolute top-1/4 -left-4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] animate-float">
+        </div>
+        <div
+            class="gradient-orb absolute bottom-1/4 -right-4 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px] animate-float delay-1000">
+        </div>
+
+        <div class="container mx-auto px-4 md:px-6 py-6 md:py-0 relative">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="text-left space-y-6">
+                    <div class="mb-8">
+                        <h1 class="text-3xl md:text-4xl tracking-tight relative select-none">
+                            <span class="font-light text-white">steg</span><span
+                                class="font-thin text-gray-400">.fun</span>
+                        </h1>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h2 class="hero-title text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight">
+                            Hide Your Messages
+                            <span
+                                class="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 animate-gradient pb-1">
+                                In Plain Sight
+                            </span>
+                        </h2>
+
+                        <p class="hero-description text-lg text-gray-400 max-w-xl leading-relaxed">
+                            A modern approach to steganography, enabling secure message encoding
+                            within images — all processed locally in your browser.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-4 pt-4">
+                        <div
+                            class="feature-pill px-4 py-2 bg-dark-secondary/30 backdrop-blur-xl rounded-xl text-sm text-gray-300 flex items-center gap-2 border border-white/5">
+                            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span class="font-medium">Browser-based Security</span>
+                        </div>
+                        <div
+                            class="feature-pill px-4 py-2 bg-dark-secondary/30 backdrop-blur-xl rounded-xl text-sm text-gray-300 flex items-center gap-2 border border-white/5">
+                            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span class="font-medium">Zero Data Transfer</span>
+                        </div>
+                        <a href="https://github.com/debugdotdog/steg.fun" target="_blank" rel="noopener noreferrer"
+                            class="feature-pill px-4 py-2 bg-dark-secondary/30 backdrop-blur-xl rounded-xl text-sm text-gray-300 flex items-center gap-2 border border-white/5 hover:bg-dark-secondary/50 transition-all duration-300">
+                            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd"
+                                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span class="font-medium">Open Source</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="glass-morphism rounded-xl p-8">
+                    <div class="space-y-8">
+                        <div class="text-center">
+                            <h3 class="text-xl font-medium text-white">Hide Your Message 🔐</h3>
+                            <p class="text-sm text-gray-400 mt-1">Upload an image and enter your secret message</p>
+                        </div>
+
+                        <div class="relative">
+                            <label
+                                class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 group"
+                                :class="dragover ? 'border-purple-400/70 bg-purple-500/5' : 'border-gray-600/40 hover:border-purple-400/40'"
+                                @dragover.prevent="dragover = true" @dragleave.prevent="dragover = false"
+                                @drop.prevent="handleDrop($event)">
+                                <div x-show="!imagePreview" class="flex flex-col items-center justify-center space-y-3">
+                                    <div
+                                        class="p-4 rounded-full bg-dark-secondary/30 group-hover:bg-purple-500/5 transition-colors duration-300">
+                                        <svg class="w-6 h-6 text-gray-400 group-hover:text-purple-400 transition-colors"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <p
+                                            class="text-sm font-medium text-gray-400 group-hover:text-purple-400 transition-colors">
+                                            <span
+                                                x-text="dragover ? 'Drop your image here 🎯' : 'Drop your image here 🖼️'"></span>
+                                        </p>
+                                        <p class="text-xs text-gray-500 mt-1">or click to upload</p>
+                                    </div>
+                                </div>
+                                <div x-show="imagePreview" x-transition.opacity
+                                    class="absolute inset-0 rounded-xl overflow-hidden">
+                                    <img :src="imagePreview" class="w-full h-full object-cover" />
+                                    <div
+                                        class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                        <p class="text-sm text-white">Change image 🔄</p>
+                                    </div>
+                                </div>
+                                <input type="file" class="hidden" accept="image/*"
+                                    @change="handleImageUpload($event)" />
+                            </label>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-400">Secret Message 🤫</label>
+                            <textarea x-model="message"
+                                class="w-full h-32 px-4 py-3 text-gray-200 bg-dark-secondary/30 border border-gray-700/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all resize-none"
+                                placeholder="Type your message here..."></textarea>
+                        </div>
+
+                        <div class="flex gap-4 justify-center pt-2">
+                            <button @click="encode()"
+                                class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg shadow-purple-900/20">
+                                <span>Hide Message</span>
+                                <span>🎭</span>
+                            </button>
+                            <button @click="decode()"
+                                class="flex items-center gap-2 px-6 py-2.5 bg-dark-secondary/50 text-gray-300 border border-gray-700/30 rounded-xl hover:bg-dark-secondary/70 hover:text-white transition-all duration-300">
+                                <span>Reveal Message</span>
+                                <span>🔍</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div x-show="result.includes('success')" x-transition:enter="toast-enter-active"
+        x-transition:leave="toast-exit-active"
+        class="fixed bottom-4 right-4 z-50 w-80 bg-dark-secondary/95 backdrop-blur-lg border border-white/10 rounded-lg shadow-lg p-4">
+        <div class="flex items-start gap-4">
+            <div class="shrink-0">
+                <template x-if="encodedImage">
+                    <img :src="encodedImage" class="w-12 h-12 rounded object-cover" />
+                </template>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-white flex items-center gap-2">
+                    <span>✨ Success!</span>
+                </p>
+                <p class="mt-1 text-sm text-gray-400">
+                    Your message has been hidden in the image
+                </p>
+                <div class="mt-3">
+                    <a :href="encodedImage" download="encoded_image.png" @click="setTimeout(() => {
+                     message = '';
+                     imagePreview = null;
+                     result = '';
+                     encodedImage = null;
+                   }, 100)"
+                        class="inline-flex items-center text-xs text-purple-400 hover:text-purple-300 transition-colors">
+                        <span>📥 Download image</span>
+                    </a>
+                </div>
+            </div>
+            <button @click="result = ''" class="shrink-0 ml-4 text-gray-400 hover:text-gray-300">
+                <span class="sr-only">Close</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div x-show="result.includes('Decoded message') || result.includes('No hidden message')"
+        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="relative bg-dark-secondary/95 rounded-2xl max-w-lg w-full border border-white/10 shadow-2xl"
+            @click.away="result = ''">
+            <div class="p-8 space-y-4">
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-3">
+                        <div class="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                            <span class="text-2xl" x-text="result.includes('No hidden message') ? '🔍' : '🔓'"></span>
+                        </div>
+                        <h3 class="text-xl font-medium text-white"
+                            x-text="result.includes('No hidden message') ? 'No Message Found' : 'Hidden Message Found!'">
+                        </h3>
+                    </div>
+                    <button @click="result = ''"
+                        class="p-2 rounded-lg bg-dark-secondary/50 text-gray-400 hover:text-white hover:bg-dark-secondary/80 border border-gray-800 transition-all duration-200">
+                        <span class="sr-only">Close</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="mt-6 p-6 bg-black/30 rounded-xl border border-gray-800">
+                    <p class="text-gray-200 text-base leading-relaxed" x-text="result.replace('Decoded message: ', '')">
+                    </p>
+                </div>
+
+                <div class="flex justify-end mt-6">
+                    <button @click="result = ''"
+                        class="flex items-center gap-2 px-5 py-2.5 bg-dark-secondary text-gray-300 rounded-lg hover:bg-dark-secondary/70 hover:text-white border border-gray-800 transition-all duration-200">
+                        <span>Close window</span>
+                        <span>✨</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div x-data="{ showInfo: false }" class="fixed bottom-4 left-4 z-40">
+        <button @click="showInfo = !showInfo"
+            class="glass-morphism rounded-xl flex items-center gap-2 text-gray-300 hover:text-white transition-all group">
+            <span class="block md:hidden p-2 text-xl">ℹ️</span>
+            <div class="hidden md:flex items-center gap-2 p-3">
+                <span class="text-xl">ℹ️</span>
+                <span class="text-sm font-medium">Learn about Steganography</span>
+            </div>
+            <span class="absolute -top-2 -right-2 h-4 w-4 bg-purple-500 rounded-full animate-pulse"></span>
+        </button>
+
+        <div x-show="showInfo" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 translate-y-4"
+            class="absolute bottom-16 left-0 w-[calc(100vw-2rem)] md:w-80 glass-morphism rounded-xl p-6 space-y-4 max-h-[80vh] overflow-y-auto mx-4 md:mx-0">
+
+            <div class="flex justify-between items-start">
+                <h4 class="text-lg font-medium text-white flex items-center gap-2">
+                    <span>🔍</span>
+                    <span>What is Steganography?</span>
+                </h4>
+                <button @click="showInfo = false" class="text-gray-400 hover:text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                <p class="text-gray-300 leading-relaxed">
+                    Steganography is the practice of concealing messages or information within other non-secret data.
+                    Unlike encryption, which makes data unreadable, steganography hides the very existence of the
+                    message.
+                </p>
+
+                <div class="space-y-2">
+                    <h5 class="text-white font-medium flex items-center gap-2">
+                        <span>🎯</span>
+                        <span>How It Works</span>
+                    </h5>
+                    <p class="text-gray-300 leading-relaxed">
+                        This tool uses LSB (Least Significant Bit) steganography, modifying the least significant bits
+                        of image pixels to store your message. These changes are imperceptible to the human eye.
+                    </p>
+                </div>
+
+                <div class="space-y-2">
+                    <h5 class="text-white font-medium flex items-center gap-2">
+                        <span>🔒</span>
+                        <span>Security Features</span>
+                    </h5>
+                    <ul class="text-gray-300 space-y-1 list-disc list-inside ml-1">
+                        <li>Client-side processing only</li>
+                        <li>No server storage</li>
+                        <li>No data transmission</li>
+                        <li>Original image quality preserved</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-2">
+                    <h5 class="text-white font-medium flex items-center gap-2">
+                        <span>💡</span>
+                        <span>Best Practices</span>
+                    </h5>
+                    <ul class="text-gray-300 space-y-1 list-disc list-inside ml-1">
+                        <li>Use PNG images for best results</li>
+                        <li>Larger images can store more text</li>
+                        <li>Avoid re-saving encoded images as JPG</li>
+                        <li>Keep messages concise for better hiding</li>
+                    </ul>
+                </div>
+
+                <div class="mt-4 p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                    <p class="text-gray-300 text-xs leading-relaxed">
+                        <span class="text-purple-400 font-medium">Note:</span> While steganography can hide messages,
+                        it's not a replacement for proper encryption. For sensitive data, consider using additional
+                        encryption methods.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="fixed bottom-0 left-0 right-0 z-40 p-4 pointer-events-none mt-8">
+        <div class="container mx-auto flex justify-center">
+            <div
+                class="glass-morphism px-4 md:px-6 py-2 md:py-3 rounded-full inline-flex items-center gap-2 text-xs md:text-sm text-gray-400 pointer-events-auto hover:text-gray-300 transition-colors group">
+                <span class="hidden md:inline">made with</span>
+                <span class="text-red-400 animate-pulse group-hover:animate-bounce transition-all">❤️</span>
+                <span class="hidden md:inline">by</span>
+                <a href="https://debug.dog" target="_blank" rel="noopener noreferrer"
+                    class="text-purple-400 hover:text-purple-300 transition-colors">
+                    debug.dog
+                </a>
+            </div>
+        </div>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tl = gsap.timeline({
+                defaults: {
+                    ease: 'power3.out',
+                    duration: 1
+                }
+            });
+
+            gsap.set('.animate-in', {
+                opacity: 0,
+                y: 20
+            });
+
+            tl.from('h1', {
+                opacity: 0,
+                y: -20,
+                duration: 0.8
+            })
+
+                .from('.hero-title', {
+                    opacity: 0,
+                    y: 30,
+                    duration: 0.8
+                }, '-=0.4')
+                .from('.hero-description', {
+                    opacity: 0,
+                    y: 20,
+                    duration: 0.8
+                }, '-=0.6')
+
+                .from('.feature-pill', {
+                    opacity: 0,
+                    x: -20,
+                    stagger: {
+                        each: 0.2,
+                        from: "start"
+                    },
+                    duration: 0.6,
+                    onComplete: () => {
+                        gsap.set('.feature-pill', { clearProps: "all" })
+                    }
+                }, '-=0.4')
+
+                .from('.grid .glass-morphism', { 
+                    opacity: 0,
+                    scale: 0.95,
+                    duration: 0.8
+                }, '-=0.6')
+
+                .from('.fixed.bottom-4.left-4', {
+                    opacity: 1,
+                    x: -20,
+                    duration: 0.6
+                }, '-=0.4')
+
+                .from('.gradient-orb', {
+                    opacity: 0,
+                    scale: 0.8,
+                    duration: 1.5,
+                    stagger: 0.2
+                }, '-=1');
+
+            gsap.utils.toArray('.feature-pill').forEach(pill => {
+                pill.addEventListener('mouseenter', () => {
+                    gsap.to(pill, {
+                        scale: 1.05,
+                        duration: 0.3
+                    });
+                });
+                pill.addEventListener('mouseleave', () => {
+                    gsap.to(pill, {
+                        scale: 1,
+                        duration: 0.3
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
